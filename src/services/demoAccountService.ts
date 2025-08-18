@@ -40,7 +40,8 @@ export class DemoAccountService {
             data: {
               full_name: account.name
             },
-            emailRedirectTo: undefined // Skip email confirmation for demo accounts
+            emailRedirectTo: undefined, // Skip email confirmation for demo accounts
+            skipConfirmation: true // This may not work with current setup
           }
         });
 
