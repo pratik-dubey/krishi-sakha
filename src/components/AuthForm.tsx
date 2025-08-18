@@ -272,6 +272,39 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
     });
   };
 
+  const handleInstantDemoLogin = async (account: typeof DEMO_ACCOUNTS[0]) => {
+    setIsLoading(true);
+
+    try {
+      // First ensure the account exists
+      await ensureDemoAccountExists(account);
+
+      // Then try to sign in
+      const { error } = await signIn(account.email, account.password);
+
+      if (error) {
+        toast({
+          title: "Demo Login Failed",
+          description: "Could not access demo account. Please try the manual method.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: `Welcome, ${account.name}!`,
+          description: "Demo account accessed successfully",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Demo Login Error",
+        description: "Please try the manual demo login method",
+        variant: "destructive",
+      });
+    }
+
+    setIsLoading(false);
+  };
+
   const copyCredentials = (account: typeof DEMO_ACCOUNTS[0]) => {
     navigator.clipboard.writeText(`Email: ${account.email}\nPassword: ${account.password}`);
     toast({
