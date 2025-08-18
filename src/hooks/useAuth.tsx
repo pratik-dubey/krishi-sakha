@@ -149,24 +149,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signInWithGoogle = async () => {
     try {
+      console.log('Starting Google OAuth flow...');
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/`,
           queryParams: {
             access_type: 'offline',
-            prompt: 'consent',
-          }
+            prompt: 'select_account',
+          },
+          skipBrowserRedirect: false
         }
       });
 
       if (error) {
         console.error('Google OAuth error:', error);
-        return { error };
+        let errorMessage = error.message;
+
+        if (error.message?.includes('popup_blocked')) {
+          errorMessage = 'Popup was blocked. Please allow popups for this site.';
+        } else if (error.message?.includes('unauthorized_client')) {
+          errorMessage = 'OAuth client not properly configured. Please check your Google OAuth settings.';
+        } else if (error.message?.includes('redirect_uri_mismatch')) {
+          errorMessage = 'Redirect URI mismatch. Please check your Google OAuth configuration.';
+        }
+
+        return { error: { ...error, message: errorMessage } };
       }
 
       // OAuth flow initiated successfully
-      console.log('Google OAuth flow started');
+      console.log('Google OAuth flow started successfully', data);
       return { error: null };
     } catch (err: any) {
       console.error('Google OAuth failed:', err);
