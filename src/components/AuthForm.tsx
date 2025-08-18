@@ -383,7 +383,16 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                                     onClick={() => handleDemoLogin(account)}
                                     className="h-7 px-2 text-xs"
                                   >
-                                    Use
+                                    Fill
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    onClick={() => handleInstantDemoLogin(account)}
+                                    className="h-7 px-2 text-xs bg-green-600 hover:bg-green-700"
+                                    disabled={isLoading}
+                                  >
+                                    Login
                                   </Button>
                                 </div>
                               </div>
