@@ -11,7 +11,6 @@ export interface Query {
   user_id: string;
   query_text: string;
   original_query_text: string | null;
-  translated_query_text: string | null;
   detected_language: string | null;
   language: string;
   advice: string;
@@ -101,7 +100,6 @@ export const useQueries = () => {
       user_id: user.id,
       query_text: processed.cleanedText || queryText,
       original_query_text: languageResult.originalQuery,
-      translated_query_text: languageResult.isTranslationRequired ? languageResult.translatedQuery : null,
       detected_language: languageResult.detectedLanguage,
       language,
       advice: ragResponse.answer,
