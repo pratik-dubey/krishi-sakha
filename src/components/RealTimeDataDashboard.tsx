@@ -84,6 +84,7 @@ export const RealTimeDataDashboard = () => {
     try {
       // Initialize real-time system first
       console.log('🚀 Initializing real-time data system...');
+      await realTimeBootstrap.ensureInitialized();
 
       // Load all data with individual error handling
       const results = await Promise.allSettled([
