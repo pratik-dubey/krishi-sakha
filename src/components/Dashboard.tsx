@@ -30,6 +30,7 @@ import { LanguageSelector } from "./LanguageSelector";
 import { ThemeToggle } from "./ThemeToggle";
 import { QueryInput } from "./QueryInput";
 import { DatabaseStatusIndicator } from "./DatabaseStatusIndicator";
+import { DatabaseSaveAlert } from "./DatabaseSaveAlert";
 import { useQueries } from "@/hooks/useQueries";
 import { systemInitializer } from '@/services/initializeRealTimeSystem';
 
