@@ -67,7 +67,9 @@ export class DemoAccountService {
         options: {
           data: {
             full_name: name
-          }
+          },
+          emailRedirectTo: undefined,
+          skipConfirmation: true
         }
       });
 
