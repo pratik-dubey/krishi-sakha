@@ -20,6 +20,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
 import { DEMO_ACCOUNTS, demoAccountService } from '@/services/demoAccountService';
+import { mockAuthService } from '@/services/mockAuthService';
 
 interface AuthFormProps {
   onBackToLanding: () => void;
