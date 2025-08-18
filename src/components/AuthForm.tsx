@@ -60,7 +60,7 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
       // Check if this is a demo account
       const demoAccount = demoAccountService.getDemoAccount(email);
 
-      if (demoAccount) {
+      if (demoAccount && demoAccount.password === password) {
         // First try to sign in normally
         let { error } = await signIn(email, password);
 
