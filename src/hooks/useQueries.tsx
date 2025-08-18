@@ -11,7 +11,6 @@ export interface Query {
   user_id: string;
   query_text: string;
   original_query_text: string | null;
-  translated_query_text: string | null;
   detected_language: string | null;
   language: string;
   advice: string;
@@ -39,7 +38,7 @@ export const useQueries = () => {
       const isHindi = language === 'hi';
       const fallbackAnswer = isHindi ?
         `🌾 **कृषि सलाह** (सिस्टम त्रुटि के कारण सामान्य सुझाव)\n\n💡 **तत्काल सुझाव:**\n• अपनी मिट्टी की जांच कराएं\n• मौसम के अनुसार फसल का चयन करें\n• स्थानीय कृषि विशेषज्ञ से संपर्क करें\n• उ��ित सिंचाई और उर्वरक का प्रयोग करें\n\n📞 **सहायता:**\n• किसान कॉल सेंटर: 1800-180-1551\n• निकटतम कृषि केंद्र से मिलें\n\n⚠️ **नोट:** यह सामान्य सलाह है। विस्तृत जानकारी के लिए इंटरनेट कनेक्शन की जांच करें।` :
-        `🌾 **Agricultural Advisory** (General guidance due to system error)\n\n💡 **Immediate Suggestions:**\n• Test your soil regularly for nutrients\n• Choose crops suitable for current season\n• Contact local agricultural extension office\n• Use appropriate irrigation and fertilization\n\n📞 **Support:**\n• Kisan Call Center: 1800-180-1551\n• Visit nearest Krishi Vigyan Kendra\n\n⚠️ **Note:** This is general advice. Check internet connection for detailed, data-driven guidance.`;
+        `��� **Agricultural Advisory** (General guidance due to system error)\n\n💡 **Immediate Suggestions:**\n• Test your soil regularly for nutrients\n• Choose crops suitable for current season\n• Contact local agricultural extension office\n• Use appropriate irrigation and fertilization\n\n📞 **Support:**\n• Kisan Call Center: 1800-180-1551\n• Visit nearest Krishi Vigyan Kendra\n\n⚠️ **Note:** This is general advice. Check internet connection for detailed, data-driven guidance.`;
 
       return {
         answer: `**${queryText}**\n\n${fallbackAnswer}`,
@@ -101,7 +100,6 @@ export const useQueries = () => {
       user_id: user.id,
       query_text: processed.cleanedText || queryText,
       original_query_text: languageResult.originalQuery,
-      translated_query_text: languageResult.isTranslationRequired ? languageResult.translatedQuery : null,
       detected_language: languageResult.detectedLanguage,
       language,
       advice: ragResponse.answer,
@@ -120,13 +118,18 @@ export const useQueries = () => {
 
     const attemptSave = async () => {
       try {
+        // Check if user is still authenticated before attempting save
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          throw new Error('User session expired. Please sign in again.');
+        }
+
         const { data, error } = await supabase
           .from('queries')
           .insert([{
             user_id: user.id,
             query_text: processed.cleanedText || queryText,
             original_query_text: languageResult.originalQuery,
-            translated_query_text: languageResult.isTranslationRequired ? languageResult.translatedQuery : null,
             detected_language: languageResult.detectedLanguage,
             language,
             advice: ragResponse.answer,
@@ -144,15 +147,35 @@ export const useQueries = () => {
         } else {
           throw error;
         }
-      } catch (err) {
-        console.warn(`⚠️ Database save attempt ${retryCount + 1} failed:`, err);
+      } catch (err: any) {
+        const errorMessage = err?.message || 'Unknown error';
+        console.warn(`⚠️ Database save attempt ${retryCount + 1} failed:`, errorMessage);
         retryCount++;
 
+        // Handle specific error types
+        if (errorMessage.includes('session expired') || errorMessage.includes('JWT')) {
+          console.error('❌ Authentication expired. User needs to sign in again.');
+          toast({
+            title: "Session Expired",
+            description: "Please sign in again to save your queries.",
+            variant: "destructive",
+          });
+          return; // Don't retry for auth errors
+        }
+
         if (retryCount < maxRetries) {
-          // Retry after a short delay
-          setTimeout(attemptSave, 1000 * retryCount);
+          // Exponential backoff for retries
+          const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 5000);
+          console.log(`🔄 Retrying in ${delay}ms...`);
+          setTimeout(attemptSave, delay);
         } else {
-          console.error('❌ All database save attempts failed');
+          console.error('❌ All database save attempts failed:', errorMessage);
+          // Show a more informative error to the user
+          toast({
+            title: "Unable to save to history",
+            description: `Database error: ${errorMessage}. Your advice is still available below.`,
+            variant: "destructive",
+          });
         }
       }
     };
@@ -173,16 +196,19 @@ export const useQueries = () => {
       });
     }
 
-    // Check save status after a short delay and show note if needed
+    // Check save status after a reasonable delay and show appropriate feedback
     setTimeout(() => {
       if (!savedToDatabase) {
-        toast({
-          title: "⚠️ Unable to save to history right now",
-          description: "Your advice is still shown below. Retrying quietly...",
-          variant: "default",
-        });
+        // Only show this if all retries haven't finished yet
+        if (retryCount < maxRetries) {
+          toast({
+            title: "⚠️ Saving to history...",
+            description: "Your advice is ready below. Still trying to save to history.",
+            variant: "default",
+          });
+        }
       }
-    }, 2000);
+    }, 3000);
 
     setLoading(false);
     return responseData;

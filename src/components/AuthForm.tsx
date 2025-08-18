@@ -1,15 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Sprout, AlertCircle, CheckCircle, Settings, ArrowLeft, Sun, Leaf, BarChart3, Shield } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Loader2,
+  Sprout,
+  ArrowLeft,
+  Sun,
+  Leaf,
+  BarChart3,
+  Shield,
+  User,
+  Copy,
+  Bug
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { AuthDebugger } from './AuthDebugger';
+import { DEMO_ACCOUNTS, demoAccountService } from '@/services/demoAccountService';
+import { mockAuthService } from '@/services/mockAuthService';
+import { GoogleAuthDebug } from '@/components/GoogleAuthDebug';
 
 interface AuthFormProps {
   onBackToLanding: () => void;
@@ -20,31 +33,17 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'error'>('checking');
-  const [showDebugger, setShowDebugger] = useState(false);
   const { signIn, signUp, signInWithGoogle } = useAuth();
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Test Supabase connection
-    const testConnection = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Supabase connection error:', error);
-          setConnectionStatus('error');
-        } else {
-          console.log('Supabase connected successfully');
-          setConnectionStatus('connected');
-        }
-      } catch (err) {
-        console.error('Supabase connection test failed:', err);
-        setConnectionStatus('error');
-      }
-    };
-
-    testConnection();
-  }, []);
+  // Function to ensure demo accounts exist
+  const ensureDemoAccountExists = async (demoAccount: typeof DEMO_ACCOUNTS[0]) => {
+    return await demoAccountService.ensureDemoAccountExists(
+      demoAccount.email,
+      demoAccount.password,
+      demoAccount.name
+    );
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,23 +60,91 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
     setIsLoading(true);
 
     try {
-      const { error } = await signIn(email, password);
+      // Check if this is a demo account
+      const demoAccount = demoAccountService.getDemoAccount(email);
 
-      if (error) {
-        console.error('Sign in error:', error);
-        toast({
-          title: "Sign in failed",
-          description: error.message || "Failed to sign in. Please check your credentials.",
-          variant: "destructive",
-        });
+      if (demoAccount && demoAccount.password === password) {
+        // First try to sign in normally
+        let { error } = await signIn(email, password);
+
+        if (error && (error.message?.includes('Invalid login credentials') || error.message?.includes('Email not confirmed'))) {
+          if (error.message?.includes('Email not confirmed')) {
+            // Demo account exists but needs confirmation - use mock auth
+            const mockSession = mockAuthService.simulateDemoLogin(demoAccount.email);
+
+            if (mockSession) {
+              toast({
+                title: "Demo Account Ready!",
+                description: `${demoAccount.name} is available! Email confirmation bypassed for demo.`,
+              });
+
+              // Trigger app re-render to pick up mock session
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000);
+              return;
+            }
+          } else {
+            // Demo account doesn't exist, try to create it
+            toast({
+              title: "Creating demo account...",
+              description: `Setting up ${demoAccount.name} for you`,
+            });
+
+            const signUpResult = await signUp(email, password, demoAccount.name);
+
+            if (signUpResult.error) {
+              if (signUpResult.error.message?.includes('User already registered')) {
+                // Account exists but password might be different, show helpful message
+                toast({
+                  title: "Demo Account Issue",
+                  description: "This demo email exists but with different credentials. Try another demo account.",
+                  variant: "destructive",
+                });
+              } else {
+                toast({
+                  title: "Demo Account Setup Failed",
+                  description: "Could not create demo account. Please try manual registration.",
+                  variant: "destructive",
+                });
+              }
+            } else {
+              toast({
+                title: "Demo Account Ready!",
+                description: `${demoAccount.name} account created and logged in successfully.`,
+              });
+            }
+          }
+        } else if (error) {
+          toast({
+            title: "Sign in failed",
+            description: error.message || "Invalid credentials. Please check your email and password.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: `Welcome back, ${demoAccount.name}!`,
+            description: "Successfully signed in to Krishi Sakha",
+          });
+        }
       } else {
-        toast({
-          title: "Success",
-          description: "Signed in successfully!",
-        });
+        // Regular account sign in
+        const { error } = await signIn(email, password);
+
+        if (error) {
+          toast({
+            title: "Sign in failed",
+            description: error.message || "Invalid credentials. Please check your email and password.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Welcome back!",
+            description: "Successfully signed in to Krishi Sakha",
+          });
+        }
       }
     } catch (err) {
-      console.error('Unexpected sign in error:', err);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -115,13 +182,9 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
       const { error } = await signUp(email, password, fullName);
 
       if (error) {
-        console.error('Sign up error:', error);
         let errorMessage = error.message || "Failed to create account.";
 
-        // Provide specific guidance for common email issues
-        if (error.message?.includes('email')) {
-          errorMessage = "Email service not configured. Click 'Debug' below for SMTP setup instructions.";
-        } else if (error.message?.includes('User already registered')) {
+        if (error.message?.includes('User already registered')) {
           errorMessage = "This email is already registered. Try signing in instead.";
         }
 
@@ -133,7 +196,7 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
       } else {
         toast({
           title: "Account created successfully!",
-          description: "Check your email for a confirmation link. If no email arrives, check the Debug section below.",
+          description: "Welcome to Krishi Sakha! You can now access all features.",
         });
         // Clear form on success
         setEmail('');
@@ -141,7 +204,6 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
         setFullName('');
       }
     } catch (err) {
-      console.error('Unexpected sign up error:', err);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -159,36 +221,27 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
       const { error } = await signInWithGoogle();
 
       if (error) {
-        console.error('Google sign in error:', error);
-        let errorMessage = error.message;
-        let title = "Google sign in failed";
+        let errorMessage = "Failed to sign in with Google. Please try again.";
 
-        // Provide more specific error messages
-        if (error.message?.includes('popup')) {
+        if (error.message?.includes('popup_blocked')) {
           errorMessage = "Popup was blocked. Please allow popups and try again.";
-        } else if (error.message?.includes('OAuth')) {
-          errorMessage = "Google OAuth is not configured. Click 'Debug' below for setup instructions.";
-        } else if (error.message?.includes('refused to connect')) {
-          title = "Google OAuth Configuration Error";
-          errorMessage = "The redirect URL is not authorized. Click 'Debug' below to fix this.";
-        } else if (error.message?.includes('access_denied')) {
-          errorMessage = "Access denied. Please try again or use email/password.";
-        } else {
-          errorMessage = `${error.message}. Click 'Debug' for configuration help.`;
+        } else if (error.message?.includes('network')) {
+          errorMessage = "Network error. Please check your connection and try again.";
         }
 
         toast({
-          title,
+          title: "Google Sign-in Failed",
           description: errorMessage,
           variant: "destructive",
         });
+      } else {
+        // OAuth redirect is happening, so we don't need to show a success message
+        // The user will be redirected to Google and then back to our app
       }
-      // Note: Success handling is automatic via auth state change
     } catch (err) {
-      console.error('Unexpected Google sign in error:', err);
       toast({
-        title: "Error",
-        description: "Failed to initiate Google sign-in. Please try again or use email/password.",
+        title: "Google Sign-in Error",
+        description: "An unexpected error occurred. Please try email/password sign-in.",
         variant: "destructive",
       });
     }
@@ -196,23 +249,83 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
     setIsLoading(false);
   };
 
-  // Show debugger if requested
-  if (showDebugger) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-green-100 p-4">
-        <div className="w-full max-w-4xl mx-auto space-y-4">
-          <Button
-            variant="outline"
-            onClick={() => setShowDebugger(false)}
-            className="mb-4"
-          >
-            ← Back to Login
-          </Button>
-          <AuthDebugger />
-        </div>
-      </div>
-    );
-  }
+  const handleDemoLogin = async (account: typeof DEMO_ACCOUNTS[0]) => {
+    setEmail(account.email);
+    setPassword(account.password);
+
+    // Pre-create the demo account in the background
+    ensureDemoAccountExists(account);
+
+    toast({
+      title: "Demo credentials loaded",
+      description: `${account.description} credentials filled in. Click Sign In to continue.`,
+    });
+  };
+
+  const handleInstantDemoLogin = async (account: typeof DEMO_ACCOUNTS[0]) => {
+    setIsLoading(true);
+
+    try {
+      // First ensure the account exists
+      await ensureDemoAccountExists(account);
+
+      // Then try to sign in
+      const { error } = await signIn(account.email, account.password);
+
+      if (error) {
+        if (error.message?.includes('Email not confirmed')) {
+          // Use mock authentication for demo accounts when email confirmation is required
+          const mockSession = mockAuthService.simulateDemoLogin(account.email);
+
+          if (mockSession) {
+            toast({
+              title: `Welcome, ${account.name}!`,
+              description: "Demo access granted (email confirmation bypassed)",
+            });
+
+            // Trigger app re-render by forcing window reload
+            // This will pick up the mock session
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            toast({
+              title: "Demo Setup Error",
+              description: "Failed to create demo session. Please try manual sign-in.",
+              variant: "destructive",
+            });
+          }
+        } else {
+          toast({
+            title: "Demo Login Failed",
+            description: "Could not access demo account. Please try the manual method.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: `Welcome, ${account.name}!`,
+          description: "Demo account accessed successfully",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Demo Login Error",
+        description: "Please try the manual demo login method",
+        variant: "destructive",
+      });
+    }
+
+    setIsLoading(false);
+  };
+
+  const copyCredentials = (account: typeof DEMO_ACCOUNTS[0]) => {
+    navigator.clipboard.writeText(`Email: ${account.email}\nPassword: ${account.password}`);
+    toast({
+      title: "Copied to clipboard",
+      description: "Demo credentials copied to clipboard",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-green-100">
@@ -244,39 +357,69 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                 <CardDescription className="text-green-600 text-lg">
                   Join thousands of farmers making smarter decisions
                 </CardDescription>
-
-                {/* Connection Status */}
-                <div className="flex items-center justify-center space-x-2 mt-4">
-                  {connectionStatus === 'checking' && (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
-                      <span className="text-xs text-gray-500">Connecting...</span>
-                    </>
-                  )}
-                  {connectionStatus === 'connected' && (
-                    <>
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <span className="text-xs text-green-600">Connected</span>
-                    </>
-                  )}
-                  {connectionStatus === 'error' && (
-                    <>
-                      <AlertCircle className="h-4 w-4 text-red-500" />
-                      <span className="text-xs text-red-600">Connection Error</span>
-                    </>
-                  )}
-                </div>
               </CardHeader>
               
               <CardContent className="px-8 pb-8">
                 <Tabs defaultValue="signin" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsList className="grid w-full grid-cols-3 mb-6">
                     <TabsTrigger value="signin">Sign In</TabsTrigger>
                     <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                    <TabsTrigger value="debug" className="text-xs">
+                      <Bug className="h-3 w-3 mr-1" />
+                      Debug
+                    </TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="signin" className="space-y-4">
-                    {/* Demo Credentials */}
+                    {/* Demo Accounts Section */}
+                    <Alert className="border-blue-200 bg-blue-50">
+                      <User className="h-4 w-4" />
+                      <AlertDescription>
+                        <div className="space-y-2">
+                          <p className="font-medium text-blue-900">🚀 Quick Demo Access - No Registration Needed!</p>
+                          <p className="text-xs text-blue-700">Click "Login" for instant access, or "Fill" to auto-fill credentials. Demo accounts are created automatically.</p>
+                          <div className="space-y-1">
+                            {DEMO_ACCOUNTS.map((account, index) => (
+                              <div key={index} className="flex items-center justify-between bg-white rounded p-2 border">
+                                <div className="text-sm">
+                                  <div className="font-medium">{account.name}</div>
+                                  <div className="text-xs text-gray-600">{account.email}</div>
+                                </div>
+                                <div className="flex gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => copyCredentials(account)}
+                                    className="h-7 w-7 p-0"
+                                    title="Copy credentials"
+                                  >
+                                    <Copy className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleDemoLogin(account)}
+                                    className="h-7 px-2 text-xs"
+                                  >
+                                    Fill
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    onClick={() => handleInstantDemoLogin(account)}
+                                    className="h-7 px-2 text-xs bg-green-600 hover:bg-green-700"
+                                    disabled={isLoading}
+                                  >
+                                    Login
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+
                     <form onSubmit={handleSignIn} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="signin-email">Email</Label>
@@ -305,7 +448,7 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                       <Button
                         type="submit"
                         className="w-full h-12 bg-green-600 hover:bg-green-700 text-lg font-semibold"
-                        disabled={isLoading || connectionStatus !== 'connected'}
+                        disabled={isLoading}
                       >
                         {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                         Sign In
@@ -344,7 +487,7 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                         <Input
                           id="signup-password"
                           type="password"
-                          placeholder="Create a password"
+                          placeholder="Create a password (min 6 characters)"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           required
@@ -354,12 +497,16 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                       <Button
                         type="submit"
                         className="w-full h-12 bg-green-600 hover:bg-green-700 text-lg font-semibold"
-                        disabled={isLoading || connectionStatus !== 'connected'}
+                        disabled={isLoading}
                       >
                         {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                         Create Account
                       </Button>
                     </form>
+                  </TabsContent>
+
+                  <TabsContent value="debug" className="space-y-4">
+                    <GoogleAuthDebug />
                   </TabsContent>
                 </Tabs>
                 
@@ -379,7 +526,7 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                     variant="outline"
                     className="w-full mt-4 h-12"
                     onClick={handleGoogleSignIn}
-                    disabled={isLoading || connectionStatus !== 'connected'}
+                    disabled={isLoading}
                   >
                     {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                     <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
@@ -390,29 +537,6 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                     </svg>
                     Sign in with Google
                   </Button>
-                </div>
-
-                {/* Debug and Help Options */}
-                <div className="mt-6 space-y-3">
-                  <div className="text-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowDebugger(true)}
-                      className="text-blue-600 hover:text-blue-700"
-                    >
-                      <Settings className="h-4 w-4 mr-1" />
-                      Debug Authentication Issues
-                    </Button>
-                  </div>
-
-                  {connectionStatus === 'error' && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                      <p className="text-sm text-red-800 text-center">
-                        ⚠️ Authentication service unavailable. Please check configuration.
-                      </p>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>

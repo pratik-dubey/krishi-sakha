@@ -285,10 +285,14 @@ export const EnhancedAdviceCard = ({
             variant="outline"
             size="sm"
             onClick={() => {
-              navigator.share?.({
-                title: 'Krishi Sakha AI Advice',
-                text: advice
-              }) || navigator.clipboard.writeText(advice);
+              if (navigator.share) {
+                navigator.share({
+                  title: 'Krishi Sakha AI Advice',
+                  text: advice
+                });
+              } else {
+                navigator.clipboard.writeText(advice);
+              }
             }}
             className="flex-1"
           >
