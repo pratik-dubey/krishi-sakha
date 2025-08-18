@@ -6,21 +6,23 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Loader2, 
-  Sprout, 
-  ArrowLeft, 
-  Sun, 
-  Leaf, 
-  BarChart3, 
-  Shield, 
+import {
+  Loader2,
+  Sprout,
+  ArrowLeft,
+  Sun,
+  Leaf,
+  BarChart3,
+  Shield,
   User,
-  Copy
+  Copy,
+  Bug
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
 import { DEMO_ACCOUNTS, demoAccountService } from '@/services/demoAccountService';
 import { mockAuthService } from '@/services/mockAuthService';
+import { GoogleAuthDebug } from '@/components/GoogleAuthDebug';
 
 interface AuthFormProps {
   onBackToLanding: () => void;
