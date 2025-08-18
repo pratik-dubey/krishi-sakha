@@ -139,7 +139,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // Check if we have a mock session and clear it
+    if (mockAuthService.getCurrentSession()) {
+      mockAuthService.signOut();
+    } else {
+      await supabase.auth.signOut();
+    }
   };
 
   const signInWithGoogle = async () => {
