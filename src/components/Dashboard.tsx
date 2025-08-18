@@ -116,7 +116,6 @@ export const Dashboard = ({ language, onLanguageChange }: DashboardProps) => {
       timestamp: new Date(query.created_at),
       source: "Krishi Sakha AI",
       originalQuery: query.original_query_text,
-      translatedQuery: query.translated_query_text,
       detectedLanguage: query.detected_language,
       geminiValidated: query.gemini_validated,
       confidence: query.confidence,
