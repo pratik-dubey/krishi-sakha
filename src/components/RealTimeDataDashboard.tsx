@@ -25,6 +25,40 @@ import { useToast } from '@/hooks/use-toast';
 import { realTimeDataIntegration } from '@/services/realTimeDataIntegration';
 import { dataScheduler } from '@/services/dataScheduler';
 
+interface SystemStatus {
+  status: string;
+  services: { [key: string]: string };
+  lastUpdate: string;
+}
+
+interface MarketDataItem {
+  crop: string;
+  price: number;
+  location: string;
+  timestamp: string;
+}
+
+interface WeatherDataItem {
+  location: string;
+  temperature: number;
+  humidity: number;
+  rainfall: number;
+  timestamp: string;
+}
+
+interface SummaryData {
+  totalQueries: number;
+  successRate: number;
+  averageResponseTime: number;
+  topCrops: string[];
+}
+
+interface EnhancedResponse {
+  response: string;
+  confidence: number;
+  sources: string[];
+}
+
 export const RealTimeDataDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [systemStatus, setSystemStatus] = useState<any>(null);
