@@ -361,9 +361,13 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
               
               <CardContent className="px-8 pb-8">
                 <Tabs defaultValue="signin" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsList className="grid w-full grid-cols-3 mb-6">
                     <TabsTrigger value="signin">Sign In</TabsTrigger>
                     <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                    <TabsTrigger value="debug" className="text-xs">
+                      <Bug className="h-3 w-3 mr-1" />
+                      Debug
+                    </TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="signin" className="space-y-4">
@@ -499,6 +503,10 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                         Create Account
                       </Button>
                     </form>
+                  </TabsContent>
+
+                  <TabsContent value="debug" className="space-y-4">
+                    <GoogleAuthDebug />
                   </TabsContent>
                 </Tabs>
                 
