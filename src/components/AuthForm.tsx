@@ -69,19 +69,73 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
     setIsLoading(true);
 
     try {
-      const { error } = await signIn(email, password);
+      // Check if this is a demo account
+      const demoAccount = DEMO_ACCOUNTS.find(account =>
+        account.email === email && account.password === password
+      );
 
-      if (error) {
-        toast({
-          title: "Sign in failed",
-          description: error.message || "Invalid credentials. Please check your email and password.",
-          variant: "destructive",
-        });
+      if (demoAccount) {
+        // First try to sign in normally
+        let { error } = await signIn(email, password);
+
+        if (error && error.message?.includes('Invalid login credentials')) {
+          // Demo account doesn't exist, try to create it
+          toast({
+            title: "Creating demo account...",
+            description: `Setting up ${demoAccount.name} for you`,
+          });
+
+          const signUpResult = await signUp(email, password, demoAccount.name);
+
+          if (signUpResult.error) {
+            if (signUpResult.error.message?.includes('User already registered')) {
+              // Account exists but password might be different, show helpful message
+              toast({
+                title: "Demo Account Issue",
+                description: "This demo email exists but with different credentials. Try another demo account.",
+                variant: "destructive",
+              });
+            } else {
+              toast({
+                title: "Demo Account Setup Failed",
+                description: "Could not create demo account. Please try manual registration.",
+                variant: "destructive",
+              });
+            }
+          } else {
+            toast({
+              title: "Demo Account Ready!",
+              description: `${demoAccount.name} account created and logged in successfully.`,
+            });
+          }
+        } else if (error) {
+          toast({
+            title: "Sign in failed",
+            description: error.message || "Invalid credentials. Please check your email and password.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: `Welcome back, ${demoAccount.name}!`,
+            description: "Successfully signed in to Krishi Sakha",
+          });
+        }
       } else {
-        toast({
-          title: "Welcome back!",
-          description: "Successfully signed in to Krishi Sakha",
-        });
+        // Regular account sign in
+        const { error } = await signIn(email, password);
+
+        if (error) {
+          toast({
+            title: "Sign in failed",
+            description: error.message || "Invalid credentials. Please check your email and password.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Welcome back!",
+            description: "Successfully signed in to Krishi Sakha",
+          });
+        }
       }
     } catch (err) {
       toast({
