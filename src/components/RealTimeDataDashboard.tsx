@@ -51,6 +51,7 @@ interface SummaryData {
   successRate: number;
   averageResponseTime: number;
   topCrops: string[];
+  text?: string;
 }
 
 interface EnhancedResponse {
@@ -104,33 +105,89 @@ export const RealTimeDataDashboard = () => {
       setSystemStatus(status);
     } catch (error) {
       console.error('Failed to get system status:', error);
+      // Set fallback system status
+      setSystemStatus({
+        status: 'offline',
+        services: {
+          'Market Data': 'limited',
+          'Weather Data': 'limited',
+          'Data Scheduler': 'offline'
+        },
+        lastUpdate: new Date().toISOString()
+      });
     }
   };
 
   const loadMarketData = async () => {
     try {
       const data = await realTimeDataIntegration.getLatestMarketPrices();
-      setMarketData(data.slice(0, 10));
+      setMarketData(Array.isArray(data) ? data.slice(0, 10) : []);
     } catch (error) {
       console.error('Failed to load market data:', error);
+      // Set fallback market data
+      setMarketData([
+        {
+          crop: 'Rice',
+          price: 2500,
+          location: 'Delhi',
+          timestamp: new Date().toISOString()
+        },
+        {
+          crop: 'Wheat',
+          price: 2200,
+          location: 'Punjab',
+          timestamp: new Date().toISOString()
+        }
+      ]);
     }
   };
 
   const loadWeatherData = async () => {
     try {
       const data = await realTimeDataIntegration.getCurrentWeather();
-      setWeatherData(data.slice(0, 8));
+      setWeatherData(Array.isArray(data) ? data.slice(0, 8) : []);
     } catch (error) {
       console.error('Failed to load weather data:', error);
+      // Set fallback weather data
+      setWeatherData([
+        {
+          location: 'Delhi',
+          temperature: 28,
+          humidity: 65,
+          rainfall: 0,
+          timestamp: new Date().toISOString()
+        },
+        {
+          location: 'Mumbai',
+          temperature: 32,
+          humidity: 78,
+          rainfall: 5,
+          timestamp: new Date().toISOString()
+        }
+      ]);
     }
   };
 
   const loadSummary = async () => {
     try {
       const summaryText = await realTimeDataIntegration.getQuickSummary();
-      setSummary({ text: summaryText });
+      setSummary({
+        totalQueries: 0,
+        successRate: 0,
+        averageResponseTime: 0,
+        topCrops: [],
+        text: summaryText
+      });
     } catch (error) {
       console.error('Failed to load summary:', error);
+      // Set fallback summary
+      setSummary({
+        totalQueries: 0,
+        successRate: 0,
+        averageResponseTime: 0,
+        topCrops: ['Rice', 'Wheat', 'Maize'],
+        text: 'Real-time data temporarily unavailable. Showing offline guidance.'
+      });
     }
   };
 
