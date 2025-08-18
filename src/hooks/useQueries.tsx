@@ -132,7 +132,6 @@ export const useQueries = () => {
             user_id: user.id,
             query_text: processed.cleanedText || queryText,
             original_query_text: languageResult.originalQuery,
-            translated_query_text: languageResult.isTranslationRequired ? languageResult.translatedQuery : null,
             detected_language: languageResult.detectedLanguage,
             language,
             advice: ragResponse.answer,
