@@ -1,50 +1,58 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Sprout, AlertCircle, CheckCircle, Settings, ArrowLeft, Sun, Leaf, BarChart3, Shield } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { 
+  Loader2, 
+  Sprout, 
+  ArrowLeft, 
+  Sun, 
+  Leaf, 
+  BarChart3, 
+  Shield, 
+  User,
+  Copy
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { AuthDebugger } from './AuthDebugger';
 
 interface AuthFormProps {
   onBackToLanding: () => void;
 }
+
+// Dummy account credentials
+const DEMO_ACCOUNTS = [
+  {
+    email: 'farmer@demo.com',
+    password: 'farmer123',
+    name: 'Demo Farmer',
+    description: 'Sample farmer account'
+  },
+  {
+    email: 'expert@demo.com', 
+    password: 'expert123',
+    name: 'Agricultural Expert',
+    description: 'Agricultural expert account'
+  },
+  {
+    email: 'admin@demo.com',
+    password: 'admin123', 
+    name: 'Admin User',
+    description: 'Administrator account'
+  }
+];
 
 export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'error'>('checking');
-  const [showDebugger, setShowDebugger] = useState(false);
-  const { signIn, signUp, signInWithGoogle } = useAuth();
+  const { signIn, signUp } = useAuth();
   const { toast } = useToast();
-
-  useEffect(() => {
-    // Test Supabase connection
-    const testConnection = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Supabase connection error:', error);
-          setConnectionStatus('error');
-        } else {
-          console.log('Supabase connected successfully');
-          setConnectionStatus('connected');
-        }
-      } catch (err) {
-        console.error('Supabase connection test failed:', err);
-        setConnectionStatus('error');
-      }
-    };
-
-    testConnection();
-  }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,20 +72,18 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
       const { error } = await signIn(email, password);
 
       if (error) {
-        console.error('Sign in error:', error);
         toast({
           title: "Sign in failed",
-          description: error.message || "Failed to sign in. Please check your credentials.",
+          description: error.message || "Invalid credentials. Please check your email and password.",
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Success",
-          description: "Signed in successfully!",
+          title: "Welcome back!",
+          description: "Successfully signed in to Krishi Sakha",
         });
       }
     } catch (err) {
-      console.error('Unexpected sign in error:', err);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -115,13 +121,9 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
       const { error } = await signUp(email, password, fullName);
 
       if (error) {
-        console.error('Sign up error:', error);
         let errorMessage = error.message || "Failed to create account.";
 
-        // Provide specific guidance for common email issues
-        if (error.message?.includes('email')) {
-          errorMessage = "Email service not configured. Click 'Debug' below for SMTP setup instructions.";
-        } else if (error.message?.includes('User already registered')) {
+        if (error.message?.includes('User already registered')) {
           errorMessage = "This email is already registered. Try signing in instead.";
         }
 
@@ -133,7 +135,7 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
       } else {
         toast({
           title: "Account created successfully!",
-          description: "Check your email for a confirmation link. If no email arrives, check the Debug section below.",
+          description: "Welcome to Krishi Sakha! You can now access all features.",
         });
         // Clear form on success
         setEmail('');
@@ -141,7 +143,6 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
         setFullName('');
       }
     } catch (err) {
-      console.error('Unexpected sign up error:', err);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -156,63 +157,42 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
     setIsLoading(true);
 
     try {
-      const { error } = await signInWithGoogle();
-
+      const { error } = await signIn('', ''); // Will be replaced with actual Google OAuth
+      
       if (error) {
-        console.error('Google sign in error:', error);
-        let errorMessage = error.message;
-        let title = "Google sign in failed";
-
-        // Provide more specific error messages
-        if (error.message?.includes('popup')) {
-          errorMessage = "Popup was blocked. Please allow popups and try again.";
-        } else if (error.message?.includes('OAuth')) {
-          errorMessage = "Google OAuth is not configured. Click 'Debug' below for setup instructions.";
-        } else if (error.message?.includes('refused to connect')) {
-          title = "Google OAuth Configuration Error";
-          errorMessage = "The redirect URL is not authorized. Click 'Debug' below to fix this.";
-        } else if (error.message?.includes('access_denied')) {
-          errorMessage = "Access denied. Please try again or use email/password.";
-        } else {
-          errorMessage = `${error.message}. Click 'Debug' for configuration help.`;
-        }
-
         toast({
-          title,
-          description: errorMessage,
-          variant: "destructive",
+          title: "Google Sign-in",
+          description: "Google sign-in is currently being set up. Please use email/password for now.",
+          variant: "default",
         });
       }
-      // Note: Success handling is automatic via auth state change
     } catch (err) {
-      console.error('Unexpected Google sign in error:', err);
       toast({
-        title: "Error",
-        description: "Failed to initiate Google sign-in. Please try again or use email/password.",
-        variant: "destructive",
+        title: "Google Sign-in",
+        description: "Google sign-in is currently being set up. Please use email/password for now.",
+        variant: "default",
       });
     }
 
     setIsLoading(false);
   };
 
-  // Show debugger if requested
-  if (showDebugger) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-green-100 p-4">
-        <div className="w-full max-w-4xl mx-auto space-y-4">
-          <Button
-            variant="outline"
-            onClick={() => setShowDebugger(false)}
-            className="mb-4"
-          >
-            ← Back to Login
-          </Button>
-          <AuthDebugger />
-        </div>
-      </div>
-    );
-  }
+  const handleDemoLogin = (account: typeof DEMO_ACCOUNTS[0]) => {
+    setEmail(account.email);
+    setPassword(account.password);
+    toast({
+      title: "Demo credentials loaded",
+      description: `${account.description} credentials filled in. Click Sign In to continue.`,
+    });
+  };
+
+  const copyCredentials = (account: typeof DEMO_ACCOUNTS[0]) => {
+    navigator.clipboard.writeText(`Email: ${account.email}\nPassword: ${account.password}`);
+    toast({
+      title: "Copied to clipboard",
+      description: "Demo credentials copied to clipboard",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-green-100">
@@ -244,28 +224,6 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                 <CardDescription className="text-green-600 text-lg">
                   Join thousands of farmers making smarter decisions
                 </CardDescription>
-
-                {/* Connection Status */}
-                <div className="flex items-center justify-center space-x-2 mt-4">
-                  {connectionStatus === 'checking' && (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
-                      <span className="text-xs text-gray-500">Connecting...</span>
-                    </>
-                  )}
-                  {connectionStatus === 'connected' && (
-                    <>
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <span className="text-xs text-green-600">Connected</span>
-                    </>
-                  )}
-                  {connectionStatus === 'error' && (
-                    <>
-                      <AlertCircle className="h-4 w-4 text-red-500" />
-                      <span className="text-xs text-red-600">Connection Error</span>
-                    </>
-                  )}
-                </div>
               </CardHeader>
               
               <CardContent className="px-8 pb-8">
@@ -276,7 +234,44 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                   </TabsList>
                   
                   <TabsContent value="signin" className="space-y-4">
-                    {/* Demo Credentials */}
+                    {/* Demo Accounts Section */}
+                    <Alert className="border-blue-200 bg-blue-50">
+                      <User className="h-4 w-4" />
+                      <AlertDescription>
+                        <div className="space-y-2">
+                          <p className="font-medium text-blue-900">Try Demo Accounts:</p>
+                          <div className="space-y-1">
+                            {DEMO_ACCOUNTS.map((account, index) => (
+                              <div key={index} className="flex items-center justify-between bg-white rounded p-2 border">
+                                <div className="text-sm">
+                                  <div className="font-medium">{account.name}</div>
+                                  <div className="text-xs text-gray-600">{account.email}</div>
+                                </div>
+                                <div className="flex gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => copyCredentials(account)}
+                                    className="h-7 w-7 p-0"
+                                  >
+                                    <Copy className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleDemoLogin(account)}
+                                    className="h-7 px-2 text-xs"
+                                  >
+                                    Use
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+
                     <form onSubmit={handleSignIn} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="signin-email">Email</Label>
@@ -305,7 +300,7 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                       <Button
                         type="submit"
                         className="w-full h-12 bg-green-600 hover:bg-green-700 text-lg font-semibold"
-                        disabled={isLoading || connectionStatus !== 'connected'}
+                        disabled={isLoading}
                       >
                         {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                         Sign In
@@ -344,7 +339,7 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                         <Input
                           id="signup-password"
                           type="password"
-                          placeholder="Create a password"
+                          placeholder="Create a password (min 6 characters)"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           required
@@ -354,7 +349,7 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                       <Button
                         type="submit"
                         className="w-full h-12 bg-green-600 hover:bg-green-700 text-lg font-semibold"
-                        disabled={isLoading || connectionStatus !== 'connected'}
+                        disabled={isLoading}
                       >
                         {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                         Create Account
@@ -379,7 +374,7 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                     variant="outline"
                     className="w-full mt-4 h-12"
                     onClick={handleGoogleSignIn}
-                    disabled={isLoading || connectionStatus !== 'connected'}
+                    disabled={isLoading}
                   >
                     {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                     <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
@@ -390,29 +385,6 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                     </svg>
                     Sign in with Google
                   </Button>
-                </div>
-
-                {/* Debug and Help Options */}
-                <div className="mt-6 space-y-3">
-                  <div className="text-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowDebugger(true)}
-                      className="text-blue-600 hover:text-blue-700"
-                    >
-                      <Settings className="h-4 w-4 mr-1" />
-                      Debug Authentication Issues
-                    </Button>
-                  </div>
-
-                  {connectionStatus === 'error' && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                      <p className="text-sm text-red-800 text-center">
-                        ⚠️ Authentication service unavailable. Please check configuration.
-                      </p>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
