@@ -75,7 +75,7 @@ export const RealTimeDataDashboard = () => {
     loadInitialData();
     const interval = setInterval(updateSystemStatus, 30000); // Update every 30 seconds
     return () => clearInterval(interval);
-  }, []);
+  }, [loadInitialData]);
 
   const loadInitialData = async () => {
     setLoading(true);
