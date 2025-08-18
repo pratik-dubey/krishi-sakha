@@ -51,7 +51,7 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, signInWithGoogle } = useAuth();
   const { toast } = useToast();
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -157,20 +157,31 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
     setIsLoading(true);
 
     try {
-      const { error } = await signIn('', ''); // Will be replaced with actual Google OAuth
-      
+      const { error } = await signInWithGoogle();
+
       if (error) {
+        let errorMessage = "Failed to sign in with Google. Please try again.";
+
+        if (error.message?.includes('popup_blocked')) {
+          errorMessage = "Popup was blocked. Please allow popups and try again.";
+        } else if (error.message?.includes('network')) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        }
+
         toast({
-          title: "Google Sign-in",
-          description: "Google sign-in is currently being set up. Please use email/password for now.",
-          variant: "default",
+          title: "Google Sign-in Failed",
+          description: errorMessage,
+          variant: "destructive",
         });
+      } else {
+        // OAuth redirect is happening, so we don't need to show a success message
+        // The user will be redirected to Google and then back to our app
       }
     } catch (err) {
       toast({
-        title: "Google Sign-in",
-        description: "Google sign-in is currently being set up. Please use email/password for now.",
-        variant: "default",
+        title: "Google Sign-in Error",
+        description: "An unexpected error occurred. Please try email/password sign-in.",
+        variant: "destructive",
       });
     }
 
