@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
+import { DEMO_ACCOUNTS, demoAccountService } from '@/services/demoAccountService';
 
 interface AuthFormProps {
   onBackToLanding: () => void;
