@@ -61,14 +61,14 @@ interface EnhancedResponse {
 
 export const RealTimeDataDashboard = () => {
   const [loading, setLoading] = useState(false);
-  const [systemStatus, setSystemStatus] = useState<any>(null);
-  const [marketData, setMarketData] = useState<any[]>([]);
-  const [weatherData, setWeatherData] = useState<any[]>([]);
-  const [summary, setSummary] = useState<any>(null);
+  const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
+  const [marketData, setMarketData] = useState<MarketDataItem[]>([]);
+  const [weatherData, setWeatherData] = useState<WeatherDataItem[]>([]);
+  const [summary, setSummary] = useState<SummaryData | null>(null);
   const [testQuery, setTestQuery] = useState('');
   const [testLocation, setTestLocation] = useState('');
   const [testCrop, setTestCrop] = useState('');
-  const [enhancedResponse, setEnhancedResponse] = useState<any>(null);
+  const [enhancedResponse, setEnhancedResponse] = useState<EnhancedResponse | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
