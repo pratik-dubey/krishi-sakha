@@ -29,7 +29,10 @@ import { useToast } from "@/hooks/use-toast";
 import { LanguageSelector } from "./LanguageSelector";
 import { ThemeToggle } from "./ThemeToggle";
 import { QueryInput } from "./QueryInput";
-import { useQueries } from "@/hooks/useQueries";
+import { DatabaseStatusIndicator } from "./DatabaseStatusIndicator";
+import { DatabaseSaveAlert } from "./DatabaseSaveAlert";
+import { DemoAccountIndicator } from "./DemoAccountIndicator";
+import { useQueries, Query } from "@/hooks/useQueries";
 import { systemInitializer } from '@/services/initializeRealTimeSystem';
 
 // Lazy load components for better performance
@@ -47,7 +50,16 @@ export const Dashboard = ({ language, onLanguageChange }: DashboardProps) => {
   const [activeTab, setActiveTab] = useState("home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentAdvice, setCurrentAdvice] = useState<any>(null);
+  const [currentAdvice, setCurrentAdvice] = useState<{
+    advice: string;
+    explanation: string;
+    source: string;
+    sources?: any[];
+    confidence?: number;
+    factualBasis?: string;
+    generatedContent?: string[];
+    disclaimer?: string;
+  } | null>(null);
   const { user, signOut } = useAuth();
   const { queries, loading, submitQuery } = useQueries();
   const { toast } = useToast();
@@ -105,7 +117,7 @@ export const Dashboard = ({ language, onLanguageChange }: DashboardProps) => {
   };
 
   // Transform Query[] to HistoryItem[] for QueryHistory component
-  const transformQueriesToHistory = (queries: any[]) => {
+  const transformQueriesToHistory = (queries: Query[]) => {
     return queries.map(query => ({
       id: query.id,
       query: query.query_text,
@@ -114,7 +126,6 @@ export const Dashboard = ({ language, onLanguageChange }: DashboardProps) => {
       timestamp: new Date(query.created_at),
       source: "Krishi Sakha AI",
       originalQuery: query.original_query_text,
-      translatedQuery: query.translated_query_text,
       detectedLanguage: query.detected_language,
       geminiValidated: query.gemini_validated,
       confidence: query.confidence,
@@ -213,6 +224,9 @@ export const Dashboard = ({ language, onLanguageChange }: DashboardProps) => {
               </Card>
             </div>
 
+            {/* Database Status Alert */}
+            <DatabaseSaveAlert />
+
             {/* Query Input Section */}
             <Card>
               <CardHeader>
@@ -229,7 +243,7 @@ export const Dashboard = ({ language, onLanguageChange }: DashboardProps) => {
                   onLanguageDetected={(detectedLang) => {
                     if (detectedLang !== language) {
                       toast({
-                        title: "🗣️ Language Detected",
+                        title: "🗣��� Language Detected",
                         description: `Detected: ${detectedLang.toUpperCase()}. Query processed in detected language.`,
                       });
                     }
@@ -430,13 +444,16 @@ export const Dashboard = ({ language, onLanguageChange }: DashboardProps) => {
 
           {/* Right Side - User Actions */}
           <div className="flex items-center gap-3">
+            <DemoAccountIndicator />
+            <DatabaseStatusIndicator showRefreshButton={false} />
+
             <Button variant="ghost" size="sm" className="relative">
               <Bell className="h-5 w-5" />
               <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
                 3
               </Badge>
             </Button>
-            
+
             <LanguageSelector selectedLanguage={language} onLanguageChange={onLanguageChange} />
             <ThemeToggle />
             

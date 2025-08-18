@@ -30,9 +30,9 @@ export const SystemHealthIndicator = () => {
       const hasCache = cacheStats.totalResponses > 0;
       
       // Determine overall system status
-      let connectivity = online ? 'good' : 'limited';
-      let dataServices = online ? 'good' : 'limited';
-      let cache = hasCache ? 'good' : 'warning';
+      const connectivity = online ? 'good' : 'limited';
+      const dataServices = online ? 'good' : 'limited';
+      const cache = hasCache ? 'good' : 'warning';
       let overall = 'good';
       
       if (!online && !hasCache) {

@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { mockAuthService, MockSession } from '@/services/mockAuthService';
 
 interface AuthContextType {
   user: User | null;
@@ -28,23 +29,63 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+    // Check for mock session first
+    const checkSessions = async () => {
+      const mockSession = mockAuthService.getCurrentSession();
+
+      if (mockSession) {
+        // Use mock session for demo accounts
+        setSession(mockSession as any); // Type casting for compatibility
+        setUser(mockSession.user as any); // Type casting for compatibility
+        setLoading(false);
+        return;
+      }
+
+      // If no mock session, check Supabase session
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+      } catch (err) {
+        console.error('Error getting session:', err);
+        setLoading(false);
+      }
+    };
+
+    checkSessions();
+
+    // Set up auth state listener for Supabase
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        // Only update if we don't have a mock session
+        if (!mockAuthService.getCurrentSession()) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
       }
     );
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Set up mock auth state listener
+    const unsubscribeMock = mockAuthService.onAuthStateChange((mockSession) => {
+      if (mockSession) {
+        setSession(mockSession as any);
+        setUser(mockSession.user as any);
+      } else {
+        // If mock session is cleared, check Supabase session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          setSession(session);
+          setUser(session?.user ?? null);
+        });
+      }
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      unsubscribeMock();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -98,30 +139,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // Check if we have a mock session and clear it
+    if (mockAuthService.getCurrentSession()) {
+      mockAuthService.signOut();
+    } else {
+      await supabase.auth.signOut();
+    }
   };
 
   const signInWithGoogle = async () => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      console.log('Attempting Google OAuth with redirectUrl:', redirectUrl);
+      console.log('Starting Google OAuth flow...');
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: redirectUrl
+          redirectTo: `${window.location.origin}/`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'select_account',
+          },
+          skipBrowserRedirect: false
         }
       });
 
       if (error) {
-        console.error('Supabase Google OAuth error:', error);
-      } else {
-        console.log('Google OAuth initiated:', data);
+        console.error('Google OAuth error:', error);
+        let errorMessage = error.message;
+
+        if (error.message?.includes('popup_blocked')) {
+          errorMessage = 'Popup was blocked. Please allow popups for this site.';
+        } else if (error.message?.includes('unauthorized_client')) {
+          errorMessage = 'OAuth client not properly configured. Please check your Google OAuth settings.';
+        } else if (error.message?.includes('redirect_uri_mismatch')) {
+          errorMessage = 'Redirect URI mismatch. Please check your Google OAuth configuration.';
+        }
+
+        return { error: { ...error, message: errorMessage } };
       }
 
-      return { error };
-    } catch (err) {
-      console.error('Unexpected Google OAuth error:', err);
+      // OAuth flow initiated successfully
+      console.log('Google OAuth flow started successfully', data);
+      return { error: null };
+    } catch (err: any) {
+      console.error('Google OAuth failed:', err);
       return { error: err };
     }
   };
