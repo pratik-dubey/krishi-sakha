@@ -49,7 +49,16 @@ export const Dashboard = ({ language, onLanguageChange }: DashboardProps) => {
   const [activeTab, setActiveTab] = useState("home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentAdvice, setCurrentAdvice] = useState<any>(null);
+  const [currentAdvice, setCurrentAdvice] = useState<{
+    advice: string;
+    explanation: string;
+    source: string;
+    sources?: any[];
+    confidence?: number;
+    factualBasis?: string;
+    generatedContent?: string[];
+    disclaimer?: string;
+  } | null>(null);
   const { user, signOut } = useAuth();
   const { queries, loading, submitQuery } = useQueries();
   const { toast } = useToast();
@@ -107,7 +116,7 @@ export const Dashboard = ({ language, onLanguageChange }: DashboardProps) => {
   };
 
   // Transform Query[] to HistoryItem[] for QueryHistory component
-  const transformQueriesToHistory = (queries: any[]) => {
+  const transformQueriesToHistory = (queries: Query[]) => {
     return queries.map(query => ({
       id: query.id,
       query: query.query_text,
@@ -233,7 +242,7 @@ export const Dashboard = ({ language, onLanguageChange }: DashboardProps) => {
                   onLanguageDetected={(detectedLang) => {
                     if (detectedLang !== language) {
                       toast({
-                        title: "🗣️ Language Detected",
+                        title: "🗣��� Language Detected",
                         description: `Detected: ${detectedLang.toUpperCase()}. Query processed in detected language.`,
                       });
                     }
