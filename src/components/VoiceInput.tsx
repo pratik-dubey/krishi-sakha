@@ -69,7 +69,7 @@ export const VoiceInput = ({
       let errorMessage = 'Microphone access denied';
       let description = 'Please enable microphone permissions in your browser settings';
 
-      if (permissionError.name === 'NotFoundError') {
+      if (permissionError instanceof Error && permissionError.name === 'NotFoundError') {
         errorMessage = 'No microphone found';
         description = 'Please check your audio setup and try again';
       } else if (permissionError.name === 'NotAllowedError') {
