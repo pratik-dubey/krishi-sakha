@@ -54,6 +54,23 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
   const { signIn, signUp, signInWithGoogle } = useAuth();
   const { toast } = useToast();
 
+  // Function to ensure demo accounts exist
+  const ensureDemoAccountExists = async (demoAccount: typeof DEMO_ACCOUNTS[0]) => {
+    try {
+      // Try to create the account (will fail silently if already exists)
+      const { error } = await signUp(demoAccount.email, demoAccount.password, demoAccount.name);
+
+      if (error && !error.message?.includes('User already registered')) {
+        console.warn('Failed to create demo account:', error);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.warn('Error ensuring demo account exists:', err);
+      return false;
+    }
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
 
