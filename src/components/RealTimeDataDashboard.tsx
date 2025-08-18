@@ -24,6 +24,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { realTimeDataIntegration } from '@/services/realTimeDataIntegration';
 import { dataScheduler } from '@/services/dataScheduler';
+import { realTimeBootstrap } from '@/services/realTimeDataBootstrap';
 
 interface SystemStatus {
   status: string;
