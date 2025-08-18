@@ -51,7 +51,7 @@ The system is built for inclusivity, accessibility, and reliability, especially 
 ### Installation
 
 1. Clone the repo:  
-git clone [YOUR_REPO_URL]
+git clone [https://github.com/pratik-dubey/krishi-sakha.git]
 cd krishi-sakha
 
 2. Install dependencies:  
@@ -75,25 +75,20 @@ npm run dev
 
 - On the landing page, click **Get Started** and sign in using Google.
 
-![Landing Page Screenshot](./screenshots/landing_page.png)
+![Landing Page Screenshot](./screenshots/Landing-Page.png)
+![Landing Page Screenshot](./screenshots/L-P.png)
 
-- Choose your preferred language and theme.
+- Access multilingual feature where everyone gets response and feel of the app in their native language.
 
-![Language and Theme Selection Screenshot](./screenshots/language_theme.png)
+![Language and Theme Selection Screenshot](./screenshots/Language.png)
 
-- Use text or voice input to ask agricultural queries.
+- View real-time data-backed, Gemini-validated  with govt public api hyperlocal dataset grounded by Retrieval Augmented Generation (RAG) responses with source citations.
 
-![Voice/Text Query Screenshot](./screenshots/voice_text_query.png)
+![DashBoard with Voice and Text Query Feature](./screenshots/Dashboard.png)
 
-- View real-time data-backed, Gemini-validated responses with source citations.
+- View Real time Mandi Prices going up and down and Weather , Humidity and much More fetched from all across india district wise with AI summary.
 
-![Response Screenshot](./screenshots/response_with_citations.png)
-
-- Check your query history and replay voice answers.
-
-![Query History Screenshot](./screenshots/query_history.png)
-
-- Enjoy a seamless experience on desktops and low-end mobile devices.
+![Real Time Data](./screenshots/Real-Time_Data.png)
 
 ---
 
@@ -123,13 +118,7 @@ Team TECH VILLAGERS
 - Aryan Tripathi  
 
 Live Demo: [https://krishi-sakha.vercel.app/](https://krishi-sakha.vercel.app/)  
-Email: [your-email@example.com]
-
----
-
-## Acknowledgments
-
-We acknowledge OpenAI, Google Cloud, Supabase, Indian government open data portals, and the open-source community for enabling this project.
+Email: [pratikdubey091@example.com]
 
 ---
 
