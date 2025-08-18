@@ -65,7 +65,7 @@ export const VoiceInput = ({
     // Check microphone permission first
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (permissionError: any) {
+    } catch (permissionError: unknown) {
       let errorMessage = 'Microphone access denied';
       let description = 'Please enable microphone permissions in your browser settings';
 
