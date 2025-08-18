@@ -73,58 +73,6 @@ export const RealTimeDataDashboard = () => {
   const [enhancedResponse, setEnhancedResponse] = useState<EnhancedResponse | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadInitialData();
-    const interval = setInterval(updateSystemStatus, 30000); // Update every 30 seconds
-    return () => clearInterval(interval);
-  }, [loadInitialData]);
-
-  const loadInitialData = useCallback(async () => {
-    setLoading(true);
-    try {
-      // Initialize real-time system first
-      console.log('🚀 Initializing real-time data system...');
-      await realTimeBootstrap.ensureInitialized();
-
-      // Load all data with individual error handling
-      const results = await Promise.allSettled([
-        updateSystemStatus(),
-        loadMarketData(),
-        loadWeatherData(),
-        loadSummary()
-      ]);
-
-      // Check if any critical failures occurred
-      const failures = results.filter(result => result.status === 'rejected');
-      if (failures.length === results.length) {
-        throw new Error('All data loading operations failed');
-      }
-
-      if (failures.length > 0) {
-        console.warn(`${failures.length} data loading operations failed, but others succeeded`);
-        toast({
-          title: "Partial Loading",
-          description: `Loaded ${results.length - failures.length}/${results.length} data sources successfully`,
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "Data Loaded",
-          description: "Real-time dashboard initialized successfully",
-        });
-      }
-    } catch (error) {
-      console.error('Failed to load initial data:', error);
-      toast({
-        title: "Loading Error",
-        description: "Using offline data. Some features may be limited.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
-
   const updateSystemStatus = async () => {
     try {
       const status = await realTimeDataIntegration.getSystemStatus();
@@ -216,6 +164,58 @@ export const RealTimeDataDashboard = () => {
       });
     }
   };
+
+  const loadInitialData = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Initialize real-time system first
+      console.log('🚀 Initializing real-time data system...');
+      await realTimeBootstrap.ensureInitialized();
+
+      // Load all data with individual error handling
+      const results = await Promise.allSettled([
+        updateSystemStatus(),
+        loadMarketData(),
+        loadWeatherData(),
+        loadSummary()
+      ]);
+
+      // Check if any critical failures occurred
+      const failures = results.filter(result => result.status === 'rejected');
+      if (failures.length === results.length) {
+        throw new Error('All data loading operations failed');
+      }
+
+      if (failures.length > 0) {
+        console.warn(`${failures.length} data loading operations failed, but others succeeded`);
+        toast({
+          title: "Partial Loading",
+          description: `Loaded ${results.length - failures.length}/${results.length} data sources successfully`,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Data Loaded",
+          description: "Real-time dashboard initialized successfully",
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load initial data:', error);
+      toast({
+        title: "Loading Error",
+        description: "Using offline data. Some features may be limited.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    loadInitialData();
+    const interval = setInterval(updateSystemStatus, 30000); // Update every 30 seconds
+    return () => clearInterval(interval);
+  }, [loadInitialData]);
 
   const handleRefreshAll = async () => {
     setLoading(true);
