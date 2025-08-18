@@ -153,15 +153,6 @@ export const DetailedFooter = ({ language, onLanguageChange }: DetailedFooterPro
               </div>
             </div>
 
-            {/* Language Selector */}
-            // <div className="pt-2">
-            //   <label className="block text-sm text-gray-300 mb-2">Choose Language</label>
-            //   <LanguageSelector 
-            //     selectedLanguage={language} 
-            //     onLanguageChange={onLanguageChange}
-            //     variant="footer"
-            //   />
-            // </div>
           </div>
         </div>
       </div>
