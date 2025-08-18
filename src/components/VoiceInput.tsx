@@ -72,7 +72,7 @@ export const VoiceInput = ({
       if (permissionError instanceof Error && permissionError.name === 'NotFoundError') {
         errorMessage = 'No microphone found';
         description = 'Please check your audio setup and try again';
-      } else if (permissionError.name === 'NotAllowedError') {
+      } else if (permissionError instanceof Error && permissionError.name === 'NotAllowedError') {
         errorMessage = 'Microphone permission denied';
         description = 'Click the 🔒 icon in your address bar to enable microphone access';
       } else if (permissionError.name === 'NotSupportedError') {
