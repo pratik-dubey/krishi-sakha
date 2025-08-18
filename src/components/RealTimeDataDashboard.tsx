@@ -77,7 +77,7 @@ export const RealTimeDataDashboard = () => {
     return () => clearInterval(interval);
   }, [loadInitialData]);
 
-  const loadInitialData = async () => {
+  const loadInitialData = useCallback(async () => {
     setLoading(true);
     try {
       await Promise.all([
@@ -96,7 +96,7 @@ export const RealTimeDataDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   const updateSystemStatus = async () => {
     try {
