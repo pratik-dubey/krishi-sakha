@@ -212,29 +212,6 @@ export const LandingPage = ({ onGetStarted, language = "en", onLanguageChange = 
       {/* Animated Testimonials Marquee */}
       <TestimonialsMarquee />
 
-      {/* Final CTA Section */}
-      <section className="py-16 bg-green-600">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h3 className="text-3xl font-bold text-white mb-4">
-            Start Your Smart Farming Journey Today
-          </h3>
-          <p className="text-xl text-green-100 mb-8">
-            Join thousands of farmers who are already using Krishi Sakha to make better farming decisions.
-          </p>
-          <Button 
-            size="lg" 
-            variant="secondary"
-            className="bg-white text-green-600 hover:bg-green-50 px-8 py-3 text-lg font-semibold shadow-lg"
-            onClick={onGetStarted}
-          >
-            Get Started Free
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-          <p className="text-green-200 text-sm mt-4">
-            No credit card required • Free forever • Available in 12+ languages
-          </p>
-        </div>
-      </section>
 
       {/* Detailed Footer */}
       <DetailedFooter language={currentLanguage} onLanguageChange={handleLanguageChange} />
