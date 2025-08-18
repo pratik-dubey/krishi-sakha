@@ -259,9 +259,13 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
     setIsLoading(false);
   };
 
-  const handleDemoLogin = (account: typeof DEMO_ACCOUNTS[0]) => {
+  const handleDemoLogin = async (account: typeof DEMO_ACCOUNTS[0]) => {
     setEmail(account.email);
     setPassword(account.password);
+
+    // Pre-create the demo account in the background
+    ensureDemoAccountExists(account);
+
     toast({
       title: "Demo credentials loaded",
       description: `${account.description} credentials filled in. Click Sign In to continue.`,
