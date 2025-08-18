@@ -58,9 +58,7 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
 
     try {
       // Check if this is a demo account
-      const demoAccount = DEMO_ACCOUNTS.find(account =>
-        account.email === email && account.password === password
-      );
+      const demoAccount = demoAccountService.getDemoAccount(email);
 
       if (demoAccount) {
         // First try to sign in normally
