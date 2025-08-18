@@ -35,10 +35,10 @@ import { useQueries } from "@/hooks/useQueries";
 import { systemInitializer } from '@/services/initializeRealTimeSystem';
 
 // Lazy load components for better performance
-const AdviceCard = lazy(() => import("./AdviceCard").then(module => ({ default: module.AdviceCard })));
-const EnhancedAdviceCard = lazy(() => import("./EnhancedAdviceCard").then(module => ({ default: module.EnhancedAdviceCard })));
-const QueryHistory = lazy(() => import("./QueryHistory").then(module => ({ default: module.QueryHistory })));
-const RealTimeDataDashboard = lazy(() => import("./RealTimeDataDashboard").then(module => ({ default: module.RealTimeDataDashboard })));
+const AdviceCard = lazy(() => import("./AdviceCard"));
+const EnhancedAdviceCard = lazy(() => import("./EnhancedAdviceCard"));
+const QueryHistory = lazy(() => import("./QueryHistory"));
+const RealTimeDataDashboard = lazy(() => import("./RealTimeDataDashboard"));
 
 interface DashboardProps {
   language: string;
