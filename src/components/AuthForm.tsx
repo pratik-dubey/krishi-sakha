@@ -359,7 +359,7 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                       <AlertDescription>
                         <div className="space-y-2">
                           <p className="font-medium text-blue-900">🚀 Quick Demo Access - No Registration Needed!</p>
-                          <p className="text-xs text-blue-700">Click "Use" to auto-fill credentials, then "Sign In". Demo accounts will be created automatically if needed.</p>
+                          <p className="text-xs text-blue-700">Click "Login" for instant access, or "Fill" to auto-fill credentials. Demo accounts are created automatically.</p>
                           <div className="space-y-1">
                             {DEMO_ACCOUNTS.map((account, index) => (
                               <div key={index} className="flex items-center justify-between bg-white rounded p-2 border">
