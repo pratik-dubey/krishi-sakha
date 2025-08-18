@@ -29,23 +29,63 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+    // Check for mock session first
+    const checkSessions = async () => {
+      const mockSession = mockAuthService.getCurrentSession();
+
+      if (mockSession) {
+        // Use mock session for demo accounts
+        setSession(mockSession as any); // Type casting for compatibility
+        setUser(mockSession.user as any); // Type casting for compatibility
+        setLoading(false);
+        return;
+      }
+
+      // If no mock session, check Supabase session
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+      } catch (err) {
+        console.error('Error getting session:', err);
+        setLoading(false);
+      }
+    };
+
+    checkSessions();
+
+    // Set up auth state listener for Supabase
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        // Only update if we don't have a mock session
+        if (!mockAuthService.getCurrentSession()) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
       }
     );
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Set up mock auth state listener
+    const unsubscribeMock = mockAuthService.onAuthStateChange((mockSession) => {
+      if (mockSession) {
+        setSession(mockSession as any);
+        setUser(mockSession.user as any);
+      } else {
+        // If mock session is cleared, check Supabase session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          setSession(session);
+          setUser(session?.user ?? null);
+        });
+      }
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      unsubscribeMock();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
