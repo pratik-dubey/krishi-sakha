@@ -153,6 +153,13 @@ export const DetailedFooter = ({ language, onLanguageChange }: DetailedFooterPro
               </div>
             </div>
 
+            {/* Language Selector */}
+            <div className="pt-4">
+              <LanguageSelector 
+                selectedLanguage={language} 
+                onLanguageChange={onLanguageChange}
+              />
+            </div>
           </div>
         </div>
       </div>
