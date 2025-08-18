@@ -25,28 +25,6 @@ interface AuthFormProps {
   onBackToLanding: () => void;
 }
 
-// Dummy account credentials
-const DEMO_ACCOUNTS = [
-  {
-    email: 'farmer@demo.com',
-    password: 'farmer123',
-    name: 'Demo Farmer',
-    description: 'Sample farmer account'
-  },
-  {
-    email: 'expert@demo.com', 
-    password: 'expert123',
-    name: 'Agricultural Expert',
-    description: 'Agricultural expert account'
-  },
-  {
-    email: 'admin@demo.com',
-    password: 'admin123', 
-    name: 'Admin User',
-    description: 'Administrator account'
-  }
-];
-
 export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
