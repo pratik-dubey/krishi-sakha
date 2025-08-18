@@ -215,6 +215,9 @@ export const Dashboard = ({ language, onLanguageChange }: DashboardProps) => {
               </Card>
             </div>
 
+            {/* Database Status Alert */}
+            <DatabaseSaveAlert />
+
             {/* Query Input Section */}
             <Card>
               <CardHeader>
