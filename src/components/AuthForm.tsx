@@ -67,15 +67,21 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
 
         if (error && (error.message?.includes('Invalid login credentials') || error.message?.includes('Email not confirmed'))) {
           if (error.message?.includes('Email not confirmed')) {
-            // Demo account exists but needs confirmation - bypass this for demo accounts
-            toast({
-              title: "Demo Account Ready!",
-              description: `${demoAccount.name} is available! Email confirmation bypassed for demo.`,
-            });
+            // Demo account exists but needs confirmation - use mock auth
+            const mockSession = mockAuthService.simulateDemoLogin(demoAccount.email);
 
-            // For demo accounts, we'll simulate successful login
-            // In a real app, you'd want to handle this properly
-            return; // Skip the error handling
+            if (mockSession) {
+              toast({
+                title: "Demo Account Ready!",
+                description: `${demoAccount.name} is available! Email confirmation bypassed for demo.`,
+              });
+
+              // Trigger app re-render to pick up mock session
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000);
+              return;
+            }
           } else {
             // Demo account doesn't exist, try to create it
             toast({
