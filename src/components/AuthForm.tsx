@@ -250,7 +250,8 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                       <User className="h-4 w-4" />
                       <AlertDescription>
                         <div className="space-y-2">
-                          <p className="font-medium text-blue-900">Try Demo Accounts:</p>
+                          <p className="font-medium text-blue-900">🚀 Quick Demo Access - No Registration Needed!</p>
+                          <p className="text-xs text-blue-700">Click "Use" to auto-fill credentials, then "Sign In"</p>
                           <div className="space-y-1">
                             {DEMO_ACCOUNTS.map((account, index) => (
                               <div key={index} className="flex items-center justify-between bg-white rounded p-2 border">
@@ -264,6 +265,7 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                                     variant="ghost"
                                     onClick={() => copyCredentials(account)}
                                     className="h-7 w-7 p-0"
+                                    title="Copy credentials"
                                   >
                                     <Copy className="h-3 w-3" />
                                   </Button>
