@@ -29,6 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LanguageSelector } from "./LanguageSelector";
 import { ThemeToggle } from "./ThemeToggle";
 import { QueryInput } from "./QueryInput";
+import { DatabaseStatusIndicator } from "./DatabaseStatusIndicator";
 import { useQueries } from "@/hooks/useQueries";
 import { systemInitializer } from '@/services/initializeRealTimeSystem';
 
