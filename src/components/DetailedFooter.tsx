@@ -153,13 +153,6 @@ export const DetailedFooter = ({ language, onLanguageChange }: DetailedFooterPro
               </div>
             </div>
 
-            {/* Language Selector */}
-            <div className="pt-4">
-              <LanguageSelector 
-                selectedLanguage={language} 
-                onLanguageChange={onLanguageChange}
-              />
-            </div>
           </div>
         </div>
       </div>
@@ -170,25 +163,6 @@ export const DetailedFooter = ({ language, onLanguageChange }: DetailedFooterPro
       {/* Bottom Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          {/* Legal Links */}
-          <div className="flex flex-wrap items-center gap-4 text-sm">
-            <a href="#privacy" className="text-gray-400 hover:text-green-300 transition-colors">
-              Privacy Policy
-            </a>
-            <span className="text-gray-600">•</span>
-            <a href="#terms" className="text-gray-400 hover:text-green-300 transition-colors">
-              Terms of Service
-            </a>
-            <span className="text-gray-600">•</span>
-            <a href="#cookies" className="text-gray-400 hover:text-green-300 transition-colors">
-              Cookie Policy
-            </a>
-            <span className="text-gray-600">•</span>
-            <a href="#disclaimer" className="text-gray-400 hover:text-green-300 transition-colors">
-              Disclaimer
-            </a>
-          </div>
-
           {/* Social Media */}
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-400">Follow us:</span>
@@ -213,7 +187,7 @@ export const DetailedFooter = ({ language, onLanguageChange }: DetailedFooterPro
         <div className="mt-6 pt-4 border-t border-gray-700 text-center">
           <p className="text-sm text-gray-400">
             © {currentYear} Krishi Sakha AI. All rights reserved. 
-            <span className="text-green-300 ml-2">Made with ❤️ for Indian Farmers</span>
+            <span className="text-green-300 ml-2">Made with ❤️ by Tech Villagers</span>
           </p>
           <p className="text-xs text-gray-500 mt-1">
             Powered by Government of India's Agricultural Data Initiative
