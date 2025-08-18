@@ -266,15 +266,27 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
 
       if (error) {
         if (error.message?.includes('Email not confirmed')) {
-          // For demo accounts, treat email confirmation errors as success
-          toast({
-            title: `Welcome, ${account.name}!`,
-            description: "Demo account accessed (email confirmation bypassed)",
-          });
+          // Use mock authentication for demo accounts when email confirmation is required
+          const mockSession = mockAuthService.simulateDemoLogin(account.email);
 
-          // Create a mock session for demo purposes
-          // In a real scenario, you'd implement proper email bypass
-          console.log('Demo account login simulated for:', account.email);
+          if (mockSession) {
+            toast({
+              title: `Welcome, ${account.name}!`,
+              description: "Demo access granted (email confirmation bypassed)",
+            });
+
+            // Trigger app re-render by forcing window reload
+            // This will pick up the mock session
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            toast({
+              title: "Demo Setup Error",
+              description: "Failed to create demo session. Please try manual sign-in.",
+              variant: "destructive",
+            });
+          }
         } else {
           toast({
             title: "Demo Login Failed",
