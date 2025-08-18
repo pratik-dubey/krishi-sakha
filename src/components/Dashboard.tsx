@@ -31,6 +31,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { QueryInput } from "./QueryInput";
 import { DatabaseStatusIndicator } from "./DatabaseStatusIndicator";
 import { DatabaseSaveAlert } from "./DatabaseSaveAlert";
+import { DemoAccountIndicator } from "./DemoAccountIndicator";
 import { useQueries, Query } from "@/hooks/useQueries";
 import { systemInitializer } from '@/services/initializeRealTimeSystem';
 
