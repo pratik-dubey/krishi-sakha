@@ -444,6 +444,7 @@ export const Dashboard = ({ language, onLanguageChange }: DashboardProps) => {
 
           {/* Right Side - User Actions */}
           <div className="flex items-center gap-3">
+            <DemoAccountIndicator />
             <DatabaseStatusIndicator showRefreshButton={false} />
 
             <Button variant="ghost" size="sm" className="relative">
