@@ -113,7 +113,7 @@ This project is open-source under the [MIT License](LICENSE).
 
 ## Contact
 
-Team TECH VILLAGERS  
+Team CODE TECH  
 - Pratik Dubey  
 - Aryan Tripathi  
 
