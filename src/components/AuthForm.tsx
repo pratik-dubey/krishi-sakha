@@ -364,15 +364,15 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                   <TabsList className="grid w-full grid-cols-3 mb-6">
                     <TabsTrigger value="signin">Sign In</TabsTrigger>
                     <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                    <TabsTrigger value="debug" className="text-xs">
+                    {/* <TabsTrigger value="debug" className="text-xs">
                       <Bug className="h-3 w-3 mr-1" />
                       Debug
-                    </TabsTrigger>
+                    </TabsTrigger> */}
                   </TabsList>
                   
                   <TabsContent value="signin" className="space-y-4">
                     {/* Demo Accounts Section */}
-                    <Alert className="border-blue-200 bg-blue-50">
+                    {/* <Alert className="border-blue-200 bg-blue-50">
                       <User className="h-4 w-4" />
                       <AlertDescription>
                         <div className="space-y-2">
@@ -418,7 +418,7 @@ export const AuthForm = ({ onBackToLanding }: AuthFormProps) => {
                           </div>
                         </div>
                       </AlertDescription>
-                    </Alert>
+                    </Alert> */}
 
                     <form onSubmit={handleSignIn} className="space-y-4">
                       <div className="space-y-2">
